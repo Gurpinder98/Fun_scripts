@@ -1,3 +1,3 @@
-##Visualization of Transition Matrix Over several Generations
+## Visualization of Transition Matrix Over several Generations
 
 Using NumPy and Matplotlib
