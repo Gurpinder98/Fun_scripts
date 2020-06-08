@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Logistic regression
+Logistic regression (yes, pretty basic)
 
 Created on Sun Jun  7 21:05:59 2020
 
@@ -8,6 +8,8 @@ Created on Sun Jun  7 21:05:59 2020
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import fmin_tnc
+
 
 X = []
 y = []
@@ -24,18 +26,6 @@ with open("ex2data1.txt") as f:
 X = np.array(X)
 y = np.array(y)
         
-#data visualization
-positives = y[:,0] == 1
-negatives = y[:,0] == 0
-
-plt.figure(figsize = (8,5))        
-plt.plot(X[(positives),0], X[(positives),1], "r+", label="Admitted")
-plt.plot(X[(negatives),0], X[(negatives),1], "bo", label="Not Admitted")
-plt.xlabel("Exam 1 Score")
-plt.ylabel("Exam 2 Score")
-plt.legend(loc = "best")
-plt.title("Student Admissions based on 2 Exam Scores.")
-plt.show()
 
 #sigmoid function
 def sigmoid(a):
@@ -43,11 +33,12 @@ def sigmoid(a):
 ## Alternative way
 #sigVec = np.vectorize(sigmoid)
 
-ones = np.ones((len(X), 1))
-scaled = sigmoid(X)  
-scaledX = np.append(ones, scaled, axis = 1)  
 
-initial_theta = np.zeros((len(scaledX[0]), 1))
+ones = np.ones((len(X), 1))
+X = np.append(ones, X, axis = 1)
+
+
+initial_theta = np.zeros(3)
 
 def costfunction(theta, X, y):
     m, n = X.shape
@@ -57,6 +48,33 @@ def costfunction(theta, X, y):
 
 def gradient(theta, X, y):
     m, n = X.shape
+    theta = theta.reshape((3,1))
     term = (sigmoid(X.dot(theta)) - y).transpose()
-    return (1/m)*(term.dot(X)).transpose()
+    return (1/m)*(term.dot(X))
+
+#Result = fmin_ncg(costfunction, initial_theta, gradient, args=(X, y), full_output=True)
+    
+Result = fmin_tnc(func= costfunction, x0=initial_theta, fprime=gradient, args=(X, y))
+best_theta = Result[0]
+
+#plotting the decision boundary
+def plotDecision(theta, X, y):
+    X_point = np.array([min(X[:,1])-2, max(X[:,1])+2])
+    plot_y = (-1/theta[2])*(theta[1]*X_point + theta[0])
+    
+    positives = y[:,0] == 1
+    negatives = y[:,0] == 0
+    
+    plt.figure(figsize = (8,5))        
+    plt.plot(X[(positives),1], X[(positives),2], "r+", label="Admitted")
+    plt.plot(X[(negatives),1], X[(negatives),2], "bo", label="Not Admitted")
+    plt.xlabel("Exam 1 Score")
+    plt.ylabel("Exam 2 Score")
+    plt.legend(loc = "best")
+    plt.title("Student Admissions based on 2 Exam Scores.")
+    plt.plot(X_point, plot_y, "g-")
+    plt.show()
+        
+
+
 
